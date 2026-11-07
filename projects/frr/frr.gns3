@@ -16,7 +16,17 @@
     "supplier": null,
     "topology": {
         "computes": [],
-        "drawings": [],
+        "drawings": [
+            {
+                "drawing_id": "5c9ecb3b-b552-4562-8a53-902e0b08e62b",
+                "locked": false,
+                "rotation": 0,
+                "svg": "<svg width=\"12\" height=\"24\"><text font-family=\"TypeWriter\" font-size=\"10.0\" font-weight=\"bold\" fill=\"#000000\" fill-opacity=\"1.0\"> </text></svg>",
+                "x": -857,
+                "y": -231,
+                "z": 2
+            }
+        ],
         "links": [
             {
                 "filters": {},
@@ -394,5 +404,5 @@
     "type": "topology",
     "variables": null,
     "version": "2.2.61",
-    "zoom": 100
+    "zoom": 119
 }
