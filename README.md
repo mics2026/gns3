@@ -1,0 +1,46 @@
+# GNS3 Lab
+
+GNS3 lab workspace: setup guides, a sample FRR project, and the GNS3 working folders (configs, images, appliances, symbols).
+
+## Where to find things
+
+| I want to… | Go to |
+|---|---|
+| Install GNS3 on Windows, set up the GNS3 VM in VirtualBox, fix VM startup / QEMU errors, add the FRR appliance | [OS/Windows/GNS3-Windows-Setup.md](OS/Windows/GNS3-Windows-Setup.md) |
+| Install GNS3 server and FRR on an Ubuntu 26.04 VM, run GNS3 as a service, connect the Windows GUI to it | [OS/Ubuntu/GNS3-FRR-Ubuntu-26.04-Setup.md](OS/Ubuntu/GNS3-FRR-Ubuntu-26.04-Setup.md) |
+| Open the sample FRR topology | [projects/frr/frr.gns3](projects/frr/frr.gns3) |
+| Get base startup configs for IOS, IOU and VPCS | [configs/](configs/) |
+| Find QEMU disk images (FRR 8.2.2, empty qcow2 disks, OVMF UEFI firmware) | [images/QEMU/](images/QEMU/) |
+
+## Repository layout
+
+```
+.
+├── OS/
+│   ├── Windows/GNS3-Windows-Setup.md          Windows host + GNS3 VM guide
+│   └── Ubuntu/GNS3-FRR-Ubuntu-26.04-Setup.md  Ubuntu 26.04 VM: GNS3 server + FRR
+├── projects/frr/       Sample topology: FRR 8.2.2 router, L2 switch, VPCS PC, cloud
+├── configs/            Base startup configs used by GNS3 node templates
+├── images/QEMU/        QEMU images and firmware (frr-8.2.2.qcow2, emptyNG.qcow2, OVMF_*.fd)
+├── appliances/         Custom appliance (.gns3a) files (empty for now)
+└── symbols/            Custom node symbols (empty for now)
+```
+
+## Lab at a glance
+
+| Component | Version | Address |
+|---|---|---|
+| Windows host (GNS3 GUI) | GNS3 2.2.61, VirtualBox 7.2.22 | 192.168.56.1 |
+| GNS3 VM (VirtualBox) | 2.2.61 | 192.168.56.101:80 |
+| Ubuntu-26.04-Server VM (GNS3 server + FRR) | GNS3 2.2.61, FRR 10.5.1 | 192.168.56.102:3080 |
+| FRR appliance in projects | 8.2.2 (QEMU) | — |
+
+All VMs sit on the VirtualBox host-only network `192.168.56.0/24`.
+
+## Quick start
+
+1. Set up the host by following the [Windows guide](OS/Windows/GNS3-Windows-Setup.md).
+2. Optionally, set up the Ubuntu VM by following the [Ubuntu guide](OS/Ubuntu/GNS3-FRR-Ubuntu-26.04-Setup.md).
+3. In GNS3, go to **File → Open project** and choose `projects/frr/frr.gns3`.
+
+For troubleshooting, see the reference tables at the end of each guide.
