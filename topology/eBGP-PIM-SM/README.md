@@ -17,26 +17,6 @@ Compared with the [PIM-SM multicast lab](../PIM-SM-Multicast/README.md), this on
 
 ![PIM-SM / BGP multicast topology](PIM-SM%20BGP%20Multicast%20Topology.png)
 
-### Interface map
-
-```
-                       H1 192.168.10.10 (source → 239.1.1.1)
-                        │
-                       SW1
-                        │ eth2 192.168.10.1/24
-                  ┌──── R1 ────┐   AS 65001, RP lo 10.255.0.1/32
-       10.0.12.0/30   eth0    eth1   10.0.13.0/30
-                  │            │
-             eth0 │            │ eth0
-   AS 65002      R2 ── eth1 ── eth1 ── R3      AS 65003
-                  │   10.0.23.0/30     │
-             eth2 │ 192.168.20.1/24    │ eth2 192.168.30.1/24
-                 SW2                  SW3
-                  │                    │
-           H2 192.168.20.10     H3 192.168.30.10
-           (receiver)           (receiver)
-```
-
 ### Nodes
 
 | Node | Role | GNS3 node |
