@@ -8,6 +8,7 @@ GNS3 lab workspace: setup guides, a sample FRR project, and the GNS3 working fol
 |---|---|
 | Install GNS3 on Windows, set up the GNS3 VM in VirtualBox, fix VM startup / QEMU errors, add the FRR appliance | [OS/Windows/GNS3-Windows-Setup.md](OS/Windows/GNS3-Windows-Setup.md) |
 | Install GNS3 server and FRR on an Ubuntu 26.04 VM, run GNS3 as a service, connect the Windows GUI to it | [OS/Ubuntu/GNS3-FRR-Ubuntu-26.04-Setup.md](OS/Ubuntu/GNS3-FRR-Ubuntu-26.04-Setup.md) |
+| See which GNS3 nodes are running on the Ubuntu VM (processes, memory, console ports; why `virsh` shows nothing) | [OS/Ubuntu/GNS3-FRR-Ubuntu-26.04-Setup.md § 7](OS/Ubuntu/GNS3-FRR-Ubuntu-26.04-Setup.md#7-check-running-nodes-on-the-vm) |
 | Open the sample FRR topology | [projects/frr/frr.gns3](projects/frr/frr.gns3) |
 | Get base startup configs for IOS, IOU and VPCS | [configs/](configs/) |
 | Find QEMU disk images (FRR 8.2.2, empty qcow2 disks, OVMF UEFI firmware) | [images/QEMU/](images/QEMU/) |

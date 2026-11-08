@@ -202,6 +202,91 @@ The server has no authentication and listens on every interface. That's acceptab
 | API smoke test: project with 2 VPCS nodes, linked, started | both `started`; project then deleted |
 | FRR config persistence across `systemctl restart frr` | OK |
 
+## 7. Check running nodes on the VM
+
+Every running GNS3 node is an ordinary Linux process on the VM, started directly by `gns3server`. Log in first:
+
+```bash
+ssh ubuntu@192.168.56.102
+```
+
+### List running nodes
+
+QEMU nodes (FRR and other appliances) are `qemu-system-x86_64` processes. The node name is in the `-name` option:
+
+```bash
+pgrep -a qemu-system | grep -oE -- '-name [^ ]+'                 # node names
+ps -o pid,rss,etime,args -p $(pgrep -d, qemu-system) | cut -c1-150   # PID, memory (KB), uptime
+```
+
+For a node named `R1`, the full command line looks like this:
+
+```
+/usr/bin/qemu-system-x86_64 -name R1 -m 128M -smp cpus=1 ...
+  -drive file=/home/ubuntu/GNS3/projects/<project-id>/project-files/qemu/<node-id>/hda_disk.qcow2
+  -serial telnet:127.0.0.1:5005,server,nowait
+  -monitor tcp:127.0.0.1:<port>
+```
+
+| Option | Meaning |
+|---|---|
+| `-name R1` | The node name shown in GNS3 |
+| `-m 128M` | Guest RAM (the node's **RAM** setting) |
+| `-drive .../hda_disk.qcow2` | The node's own disk: a small overlay on the base image in `~/GNS3/images/QEMU/` that holds only this node's changes |
+| `-serial telnet:127.0.0.1:5005` | QEMU's internal serial console, reachable only from the VM itself |
+| `-monitor tcp:127.0.0.1:...` | The control channel GNS3 uses to start, stop and suspend the node |
+
+### Other GNS3 processes
+
+| Command | Shows |
+|---|---|
+| `systemctl status gns3-server` | The server that starts and stops every node |
+| `pgrep -a ubridge` | One uBridge per node. It carries traffic between nodes, so each GNS3 link runs through it. |
+| `pgrep -a vpcs` | VPCS nodes |
+| `sudo ss -ltnp \| grep gns3server` | Public console ports (5000, 5002, …) |
+
+The console port you telnet to (for example `5004`) belongs to `gns3server`, which forwards it to QEMU's internal serial port (for example `127.0.0.1:5005`).
+
+### CPU, memory and swap
+
+```bash
+top -c -p $(pgrep -d, qemu-system)     # live CPU and memory for the nodes only; press q to quit
+free -m                                # RAM and swap for the whole VM
+```
+
+Without KVM, each FRR node uses about 230 MB of VM memory even with a 128 MB guest, because software emulation adds overhead. The VM has 1.6 GB of RAM, so a **2 GB swapfile** (`/swapfile`, listed in `/etc/fstab`) was added on 2026-11-08 to run the 7-node [PIM-SM lab](../../topology/PIM-SM-Multicast/README.md). To remove it: `sudo swapoff /swapfile && sudo rm /swapfile`, then delete its line from `/etc/fstab`.
+
+### Node and project files
+
+```bash
+ls ~/GNS3/projects/                                       # one folder per project (by project ID)
+ls ~/GNS3/projects/<project-id>/project-files/qemu/       # one folder per QEMU node (by node ID)
+grep '"name"' ~/GNS3/projects/<project-id>/*.gns3         # node names in the project file
+```
+
+### From Windows, without SSH
+
+The GNS3 API returns the same information:
+
+```powershell
+$S = 'http://192.168.56.102:3080/v2'
+Invoke-RestMethod "$S/projects" | Select-Object name, status, project_id
+Invoke-RestMethod "$S/projects/<project-id>/nodes" | Select-Object name, status, console, node_type
+```
+
+### Why `virsh` shows nothing
+
+`virsh` lists only VMs that **libvirt** created. GNS3 doesn't use libvirt: `gns3server` runs `qemu-system-x86_64` itself and tracks nodes in its own project files. So `virsh list --all` is empty, and libvirt usually isn't installed on this VM at all.
+
+| Instead of | Use |
+|---|---|
+| `virsh list` | `pgrep -a qemu-system \| grep -oE -- '-name [^ ]+'` |
+| `virsh dominfo R1` | `ps -o pid,rss,etime,args -p $(pgrep -f '^/usr/bin/qemu-system.* -name R1 ')` |
+| `virsh console R1` | `telnet 192.168.56.102 <console port>` |
+| `virsh start` / `shutdown` | The GNS3 web UI, or the API (`POST .../nodes/<node-id>/start` or `/stop`) |
+
+Start and stop nodes through GNS3, not with `kill`. If a QEMU process is killed outside GNS3, the server still shows the node as running until it notices the process is gone.
+
 ## Troubleshooting notes
 
 | Symptom | Cause | Fix |
@@ -212,3 +297,5 @@ The server has no authentication and listens on every interface. That's acceptab
 | `systemctl status gns3-server` → unit not found | PPA ships no unit | Section 3 |
 | QEMU nodes very slow | No KVM in the VM | Enable nested virtualization (Section 3) |
 | Docker nodes fail | Docker not installed | `sudo apt-get install -y docker.io && sudo usermod -aG docker ubuntu` |
+| All nodes stop at once and projects close | The VM ran out of memory and the kernel killed a QEMU process, which restarted `gns3-server`. Check with `sudo dmesg -T \| grep -i "killed process"` and `systemctl show gns3-server -p NRestarts`. | Lower node RAM, add swap, or give the VM more RAM (Section 7) |
+| `virsh list` shows no nodes | GNS3 doesn't use libvirt | Use `pgrep -a qemu-system` (Section 7) |
