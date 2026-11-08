@@ -20,6 +20,7 @@ Step-by-step labs, each in its own folder under [topology/](topology/) with a gu
 | Use case | What it covers | Nodes | Guide |
 |---|---|---|---|
 | 802.1Q router-on-a-stick | Inter-VLAN routing between VLAN 10 and VLAN 20 over a single 802.1Q trunk | FRR 8.2.2 router, GNS3 built-in switch, 2 × VPCS | [topology/802.1Q-Router-On-Stick/](topology/802.1Q-Router-On-Stick/README.md) |
+| PIM-SM multicast | PIM Sparse Mode with a static RP, IGMP on the last hop, EIGRP unicast; converted to FRR from [NGMunia/Multicast-Routing](https://github.com/NGMunia/Multicast-Routing) | 5 × FRR 8.2.2 routers, 2 × Linux hosts | [topology/PIM-SM-Multicast/](topology/PIM-SM-Multicast/README.md) |
 
 ## Repository layout
 
@@ -30,7 +31,8 @@ Step-by-step labs, each in its own folder under [topology/](topology/) with a gu
 │   └── Ubuntu/GNS3-FRR-Ubuntu-26.04-Setup.md  Ubuntu 26.04 VM: GNS3 server + FRR
 ├── projects/frr/       Sample topology: FRR 8.2.2 router, L2 switch, VPCS PC, cloud
 ├── topology/
-│   └── 802.1Q-Router-On-Stick/   Inter-VLAN routing lab guide + topology screenshot
+│   ├── 802.1Q-Router-On-Stick/   Inter-VLAN routing lab guide + topology screenshot
+│   └── PIM-SM-Multicast/         PIM-SM multicast lab guide + FRR configs (R1–R5)
 ├── configs/            Base startup configs used by GNS3 node templates
 ├── images/QEMU/        QEMU images and firmware (frr-8.2.2.qcow2, emptyNG.qcow2, OVMF_*.fd)
 ├── appliances/         Custom appliance (.gns3a) files (empty for now)
