@@ -15,6 +15,10 @@ Compared with the [PIM-SM multicast lab](../PIM-SM-Multicast/README.md), this on
 
 ## Topology
 
+![PIM-SM / BGP multicast topology](PIM-SM%20BGP%20Multicast%20Topology.png)
+
+### Interface map
+
 ```
                        H1 192.168.10.10 (source → 239.1.1.1)
                         │
