@@ -15,9 +15,19 @@ The original repo has no license file, so this page doesn't copy its text, confi
 
 ## Topology
 
+### As built in GNS3
+
+![PIM-SM multicast lab running in GNS3 with per-node notes](PIM-SM-EIGRP.png)
+
+*The lab running on the Ubuntu GNS3 server (project `PIM-SM-Multicast`, FRR 8.2.2). The red port labels are GNS3's adapter/port numbering for QEMU nodes: `0/0` = `eth0`, `2/0` = `eth2`, and so on.*
+
+### Original design
+
 ![PIM-SM multicast topology (image from NGMunia/Multicast-Routing)](https://raw.githubusercontent.com/NGMunia/Multicast-Routing/main/Topology/Multicast.PNG)
 
-*Diagram: [NGMunia/Multicast-Routing](https://github.com/NGMunia/Multicast-Routing/blob/main/Topology/Multicast.PNG).*
+*Diagram: [NGMunia/Multicast-Routing](https://github.com/NGMunia/Multicast-Routing/blob/main/Topology/Multicast.PNG) (Cisco IOU version).*
+
+### Interface map
 
 ```
 Server ── eth0 R1 eth2 ──10.0.0.0/30── eth0 R2 eth1 ──10.0.0.8/30── eth0 R4
