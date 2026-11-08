@@ -76,17 +76,44 @@ Differences from the diagram:
 2. Cable them as in the links table above, using the exact `ethX` ports.
 3. Start all nodes.
 
-## 2. Enable pimd and eigrpd on each router
-
-FRR runs each protocol as a separate daemon, and only daemons switched on in `/etc/frr/daemons` start. From the router's Linux shell (if the console opens at `frr#`, type `exit`):
+**Memory:** the GNS3 FRR appliance defaults to 256 MB per node. In this lab each node was set to **128 MB**, which is enough for FRR. Without KVM, each QEMU process still uses about 230 MB on the server, so 7 nodes need about 1.6 GB. On the 1.6 GB Ubuntu VM, the lab only ran after adding a 2 GB swapfile:
 
 ```sh
-sed -i -e 's/^pimd=no/pimd=yes/' -e 's/^eigrpd=no/eigrpd=yes/' /etc/frr/daemons
-grep -E '^(zebra|pimd|eigrpd)=' /etc/frr/daemons     # all three should be "yes"
-rc-service frr restart        # Alpine (FRR appliance); on Debian/Ubuntu: systemctl restart frr
+sudo fallocate -l 2G /swapfile && sudo chmod 600 /swapfile && sudo mkswap /swapfile && sudo swapon /swapfile
+echo '/swapfile none swap sw 0 0' | sudo tee -a /etc/fstab
 ```
 
-Repeat on R1–R5.
+## 2. Prepare each router (daemons and interfaces)
+
+The FRR appliance console opens at the `frr#` prompt (vtysh). Type `exit` to get the Linux shell. Then make three changes:
+
+1. **Daemons:** the appliance already enables `pimd` and `eigrpd`, but it also starts `bgpd`, `ospfd`, `ripd` and several others, which waste memory in a 128 MB VM. Turn off everything this lab doesn't use.
+2. **Interfaces:** all `ethX` interfaces start **down**, and FRR doesn't bring them up. Without this step, no neighbors form.
+3. **`rp_filter`:** set it to `0` so the kernel's reverse-path filter doesn't drop multicast that PIM accepts.
+
+On R1 (list each router's own interfaces in the `for` line):
+
+```sh
+sed -i -E 's/^(bgpd|ospfd|ospf6d|ripd|ripngd|isisd|ldpd|bfdd)=yes/\1=no/; s/^(pimd|eigrpd)=no/\1=yes/' /etc/frr/daemons
+
+cat > /etc/local.d/lab.start <<'EOF'
+#!/bin/sh
+for i in eth0 eth2 eth3; do ip link set $i up; done
+for f in /proc/sys/net/ipv4/conf/*/rp_filter; do echo 0 > $f; done
+sysctl -qw net.ipv4.ip_forward=1
+EOF
+chmod +x /etc/local.d/lab.start
+rc-update add local default        # run it at every boot
+/etc/local.d/lab.start             # and run it now
+```
+
+| Router | Interfaces to bring up |
+|---|---|
+| R1 | eth0 eth2 eth3 |
+| R2 | eth0 eth1 |
+| R3 | eth0 eth1 eth2 |
+| R4 | eth0 eth1 |
+| R5 | eth0 eth1 |
 
 ## 3. Apply the router configs
 
@@ -109,6 +136,8 @@ configure terminal
 end
 write memory
 ```
+
+Or, from the Linux shell, write the file as `/etc/frr/frr.conf` (add `service integrated-vtysh-config` at the end), run `chown frr:frr /etc/frr/frr.conf`, then `rc-service frr restart`. That also restarts FRR with the trimmed daemon list from step 2.
 
 ### How the IOS commands map to FRR
 
@@ -145,6 +174,8 @@ ip route add default via 172.19.1.1
 ip addr add 239.1.1.10/32 dev eth0 autojoin         # join the group (sends an IGMP report)
 sysctl -w net.ipv4.icmp_echo_ignore_broadcasts=0    # reply to pings sent to the group
 ```
+
+In this lab, Server and Receiver are FRR appliance nodes with every FRR daemon set to `no`. To keep these settings after a reboot, put the commands in `/etc/local.d/lab.start`, as in step 2.
 
 `autojoin` makes the kernel join `239.1.1.10` on `eth0`, so R5 sees an IGMP membership report, just as it would from a real streaming client. It needs the full `iproute2` package. On a minimal BusyBox host, install it first (`apk add iproute2` on Alpine).
 
@@ -198,6 +229,35 @@ show ip pim upstream          # shows when R5 switches from the RP tree to the S
 show ip mroute count          # packet counters; FRR's stand-in for "show ip mfib active"
 ```
 
+### Tested result
+
+This output is from the lab built on the Ubuntu GNS3 server (FRR 8.2.2, 128 MB per node).
+
+```
+Server:~# ping -t 16 -c 15 239.1.1.10
+64 bytes from 172.19.1.100: seq=1 ttl=61 time=75.324 ms
+64 bytes from 172.19.1.100: seq=2 ttl=61 time=7.076 ms
+...
+15 packets transmitted, 14 packets received, 6% packet loss
+
+R5# show ip mroute
+Source          Group           Flags    Proto  Input            Output
+*               239.1.1.10      SC       IGMP   eth0             pimreg / eth1
+172.19.0.100    239.1.1.10      ST       STAR   eth0             eth1
+
+R1# show ip mroute
+*               239.1.1.10      S        PIM    eth2             eth3
+172.19.0.100    239.1.1.10      SF       STAR   eth0             eth3
+
+R2# show ip mroute          (the RP)
+*               239.1.1.10      S        PIM    lo               eth0
+172.19.0.100    239.1.1.10      SRP      none   eth0             none
+```
+
+- **The first packet is lost.** It goes to the RP inside a PIM Register message while the tree is being built.
+- **R5's `(S,G)` has the `T` (SPT) flag.** R1 forwards the stream straight out `eth3` to R3, which is the shortest path.
+- **The RP's `(S,G)` is `SRP` (pruned).** Once the shortest-path tree is up, traffic no longer passes through R2.
+
 ### What to expect
 
 - **R5 joins the shared tree toward the RP (R2) first.** After the first packets arrive, it switches to the shortest-path tree toward `172.19.0.100` (R5 → R3 → R1). FRR switches to the SPT immediately by default. To keep traffic on the shared tree for comparison, configure `ip pim spt-switchover infinity-and-beyond` on R5.
@@ -225,7 +285,8 @@ For the other routers, use the same `network` statements as their EIGRP config, 
 | Symptom | Cause / fix |
 |---|---|
 | `% Unknown command` for `ip pim` or `router eigrp` | `pimd` or `eigrpd` isn't running. Enable it in `/etc/frr/daemons` and restart FRR (step 2). Check with `show daemons` in vtysh, if your FRR version has it. |
-| No EIGRP neighbors | Check the cabling against the links table, and the IPs with `show interface brief`. Fall back to OSPF if needed. |
+| No EIGRP or PIM neighbors | Check `ip -br link`. The appliance's `ethX` interfaces start **down**, so run the `ip link set ... up` lines from step 2. Then check the cabling against the links table. Fall back to OSPF if needed. |
+| GNS3 server restarts and all nodes stop | The VM ran out of memory. Check `sudo dmesg | grep -i "killed process"`. Lower node RAM to 128 MB, add swap, or give the VM more RAM (step 1). |
 | `show ip pim rp-info` shows the RP as unreachable | The router has no route to `192.168.0.1/32`. Fix unicast routing first, and check that R2 advertises `network 192.168.0.1/32`. |
 | No IGMP group on R5 | The Receiver didn't join. Check that `ip addr show eth0` on the Receiver lists `239.1.1.10`, and that R5 eth1 has `ip igmp`. |
 | Server pings get no reply | Use `-t 16` on the ping. Set `icmp_echo_ignore_broadcasts=0` on the Receiver. Check that R1 eth0 has `ip pim` so R1 registers the source with the RP. |
