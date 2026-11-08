@@ -4,20 +4,6 @@ Inter-VLAN routing between VLAN 10 and VLAN 20 using one FRR router connected to
 
 ![Router-on-a-stick topology](FRR-Router-On-Stick.png)
 
-## Topology
-
-```
-                 FRR-1 (FRR 8.2.2, QEMU)
-                 eth0  ── eth0.10  192.168.10.1/24
-                   │   └─ eth0.20  192.168.20.1/24
-                   │  802.1Q trunk
-                   e2 (dot1q)
-                 MVL-L2 (GNS3 built-in Ethernet switch)
-          e0 (access 20)          e1 (access 10)
-              │                        │
-        VLAN20 (VPCS)            VLAN10 (VPCS)
-        192.168.20.10/24         192.168.10.10/24
-        gw 192.168.20.1          gw 192.168.10.1
 ```
 
 | Node | Type | Console | Port | Connects to |
