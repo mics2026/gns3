@@ -2,9 +2,9 @@
 
 Inter-VLAN routing between VLAN 10 and VLAN 20 using one FRR router connected to an 802.1Q trunk. The lab runs on the GNS3 server on the Ubuntu VM (`192.168.56.102:3080`, see [../../OS/Ubuntu/GNS3-FRR-Ubuntu-26.04-Setup.md](../../OS/Ubuntu/GNS3-FRR-Ubuntu-26.04-Setup.md)).
 
-![Router-on-a-stick topology](FRR-Router-On-Stick.png)
+## Topology
 
-```
+![Router-on-a-stick topology](FRR-Router-On-Stick.png)
 
 | Node | Type | Console | Port | Connects to |
 |---|---|---|---|---|
