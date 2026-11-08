@@ -9,9 +9,17 @@ GNS3 lab workspace: setup guides, a sample FRR project, and the GNS3 working fol
 | Install GNS3 on Windows, set up the GNS3 VM in VirtualBox, fix VM startup / QEMU errors, add the FRR appliance | [OS/Windows/GNS3-Windows-Setup.md](OS/Windows/GNS3-Windows-Setup.md) |
 | Install GNS3 server and FRR on an Ubuntu 26.04 VM, run GNS3 as a service, connect the Windows GUI to it | [OS/Ubuntu/GNS3-FRR-Ubuntu-26.04-Setup.md](OS/Ubuntu/GNS3-FRR-Ubuntu-26.04-Setup.md) |
 | Open the sample FRR topology | [projects/frr/frr.gns3](projects/frr/frr.gns3) |
-| Build 802.1Q router-on-a-stick inter-VLAN routing (VLAN 10/20, FRR, built-in switch) | [topology/802.1Q-Router-On-Stick/](topology/802.1Q-Router-On-Stick/README.md) |
 | Get base startup configs for IOS, IOU and VPCS | [configs/](configs/) |
 | Find QEMU disk images (FRR 8.2.2, empty qcow2 disks, OVMF UEFI firmware) | [images/QEMU/](images/QEMU/) |
+| Build a lab topology for a specific use case | [Topology use cases](#topology-use-cases) |
+
+## Topology use cases
+
+Step-by-step labs, each in its own folder under [topology/](topology/) with a guide and a topology screenshot.
+
+| Use case | What it covers | Nodes | Guide |
+|---|---|---|---|
+| 802.1Q router-on-a-stick | Inter-VLAN routing between VLAN 10 and VLAN 20 over a single 802.1Q trunk | FRR 8.2.2 router, GNS3 built-in switch, 2 × VPCS | [topology/802.1Q-Router-On-Stick/](topology/802.1Q-Router-On-Stick/README.md) |
 
 ## Repository layout
 
