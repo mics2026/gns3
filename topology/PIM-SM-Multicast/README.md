@@ -265,6 +265,54 @@ R2# show ip mroute          (the RP)
 
 **About the original's router-only test:** the original lab tested by pinging from R1 while R5 itself was joined with `ip igmp join-group`. On Linux and FRR, a router joined on `eth1` doesn't answer multicast pings that arrive on `eth0`, so this version uses a real Receiver host. R5's own join is left as an optional line in [configs/R5.conf](configs/R5.conf).
 
+## About EIGRP
+
+EIGRP (Enhanced Interior Gateway Routing Protocol) provides the unicast routes in this lab. PIM depends on those routes: every multicast forwarding decision starts with an RPF check against the unicast table.
+
+EIGRP was created by Cisco and published as an informational RFC in 2016 ([RFC 7868](https://www.rfc-editor.org/rfc/rfc7868)). It's an **advanced distance-vector** protocol: each router knows only what its neighbors report, unlike OSPF, where every router keeps a map of the whole network.
+
+### How it works
+
+1. **Neighbors.** Routers send **Hello** packets to `224.0.0.10` (IP protocol 88) every 5 seconds. A neighbor is declared down after a 15-second **hold time**. Routers become neighbors only if their AS numbers match (`100` here), they share a subnet, and their K-values (metric weights) match.
+2. **Updates.** Neighbors exchange full tables when they first meet. After that they send only changes, never periodic full updates, delivered reliably by RTP (EIGRP's Reliable Transport Protocol).
+3. **Metric.** By default it uses the slowest bandwidth and the total delay along the path: `256 × (10^7 / min-bandwidth-kbps + total-delay / 10)`. R5's `show ip route` shows `[90/28160]` for its connected networks, `30720` one hop away and `33280` two hops away. The `90` is the administrative distance for internal EIGRP routes (OSPF's is 110).
+4. **DUAL** (Diffusing Update Algorithm) picks the best next hop, called the **successor**, and pre-computes a loop-free backup, the **feasible successor**. A neighbor qualifies as a backup only if its own reported distance is lower than this router's best metric (the *feasibility condition*). If the successor fails, the router switches to the backup immediately. Without a backup, the route goes **Active** and the router sends **Queries** to its neighbors.
+
+   In this lab, R5 has a single neighbor and so no backup path. R3 can reach the RP through R1 or R4. Check with `show ip eigrp topology`.
+
+### Pros and cons
+
+| Pros | Cons |
+|---|---|
+| Very fast convergence: the pre-computed feasible successor takes over immediately | Effectively Cisco-only; few other vendors implement it |
+| Simple configuration: no areas to design | FRR's `eigrpd` is basic: classic mode only, no named mode, no `bandwidth-percent`, no authentication |
+| Low overhead: partial updates on change only, no periodic flooding | **Stuck-in-Active**: in large networks without summarization or stub routers, Queries spread widely and neighbors can be reset |
+| Metric based on bandwidth and delay, not hop count | Each router sees less of the network than with OSPF's link-state database, which makes troubleshooting harder |
+| Unequal-cost load balancing (`variance`) | No traffic engineering (MPLS-TE or Segment Routing) |
+| Loop-free by design (DUAL) | Mismatched K-values or changed `bandwidth`/`delay` settings cause surprises |
+
+### EIGRP vs OSPF
+
+| | EIGRP | OSPF |
+|---|---|---|
+| Type | Advanced distance-vector | Link-state |
+| Standard | Cisco; published as RFC 7868 | Open standard (RFC 2328) |
+| Metric | Bandwidth + delay | Cost (from bandwidth) |
+| Convergence | Very fast with a feasible successor | Fast; reruns the SPF calculation |
+| Design | Flat, simple | Areas, more planning |
+| Unequal-cost load balancing | Yes | No |
+| Multi-vendor / FRR support | Limited | Universal, mature |
+| Administrative distance | 90 internal, 170 external | 110 |
+
+This lab keeps EIGRP to match the original Cisco design. On FRR in production, OSPF is the safer choice, as shown in the next section. PIM works the same with either protocol.
+
+```
+show ip eigrp neighbor
+show ip eigrp topology        # successors, feasible distances, feasible successors
+show ip eigrp interface
+show ip route eigrp
+```
+
 ## Alternative: OSPF instead of EIGRP
 
 FRR's `eigrpd` is less mature than its OSPF daemon. If EIGRP neighbors don't come up, use OSPF instead: set `ospfd=yes` in `/etc/frr/daemons`, remove `router eigrp 100`, and add the following (shown here for R1). PIM works the same over any unicast routing protocol.
