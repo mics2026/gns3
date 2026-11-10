@@ -17,21 +17,7 @@ The lab runs on the GNS3 server on the Ubuntu VM (`192.168.56.102:3080`, see [..
 
 ## Topology
 
-```
-                 ┌──────────────┐
-                 │  ONOS 2.7.0  │ 10.10.10.1/24
-                 └──────┬───────┘
-                   eth0 │ out-of-band management (OpenFlow 1.4, TCP 6653)
-                   eth0 │ 10.10.10.2/24
-                 ┌──────┴───────┐   eth1 (trunk 10,20,30)    ┌────────┐
-                 │    OVS-1     ├────────────────────────────┤ FRR-1  │ eth0.10 / .20 / .30
-                 │  br0 dpid 1  │                       eth0 └────────┘
-                 └─┬─────┬────┬─┘
-             eth2  │     │eth3│ eth4      (access, untagged)
-               ┌───┴─┐ ┌─┴───┐┌┴────┐
-               │PC10 │ │PC20 ││PC30 │
-               └─────┘ └─────┘└─────┘
-```
+![ONOS + OVS router-on-a-stick lab running in GNS3 with per-node notes](topology.png)
 
 | Node | Type | Port | Connects to | ONOS connect point |
 |---|---|---|---|---|
