@@ -1,6 +1,6 @@
-# SDN Router-on-a-Stick (ONOS 2.7 + Open vSwitch + FRR, OpenFlow 1.5)
+# SDN Router-on-a-Stick (ONOS 2.7 + Open vSwitch + FRR, OpenFlow 1.4)
 
-Inter-VLAN routing between VLAN 10, VLAN 20 and VLAN 30. The Layer 2 switch is an Open vSwitch with no local switching logic: the **ONOS 2.7 SDN controller** programs all of its VLAN forwarding over **OpenFlow 1.5** (wire version 0x06, the version used by spec 1.5.1). **FRR** is the router on the stick and routes between the VLANs over one 802.1Q trunk.
+Inter-VLAN routing between VLAN 10, VLAN 20 and VLAN 30. The Layer 2 switch is an Open vSwitch with no local switching logic: the **ONOS 2.7 SDN controller** programs all of its VLAN forwarding over **OpenFlow 1.4** (see [Why not OpenFlow 1.5](#why-not-openflow-15)). **FRR** is the router on the stick and routes between the VLANs over one 802.1Q trunk.
 
 The lab runs on the GNS3 server on the Ubuntu VM (`192.168.56.102:3080`, see [../../OS/Ubuntu/GNS3-FRR-Ubuntu-26.04-Setup.md](../../OS/Ubuntu/GNS3-FRR-Ubuntu-26.04-Setup.md)).
 
@@ -9,7 +9,7 @@ The lab runs on the GNS3 server on the Ubuntu VM (`192.168.56.102:3080`, see [..
 | Component | Role | Plane |
 |---|---|---|
 | ONOS 2.7.0 | Controller. Its **VPLS** app turns "VLAN 10/20/30" into OpenFlow rules: tag frames from access ports, untag frames going to access ports, and keep each VLAN's broadcasts separate. | Control |
-| OVS-1 | OpenFlow 1.5 switch in `secure` fail mode. Without ONOS it forwards nothing. | Data |
+| OVS-1 | OpenFlow 1.4 switch in `secure` fail mode. Without ONOS it forwards nothing. | Data |
 | FRR-1 | Router on a stick. `eth0.10`, `eth0.20`, `eth0.30` are the gateways; FRR routes between them. | Routing |
 | PC10, PC20, PC30 | VPCS hosts, one per VLAN, untagged. | — |
 
@@ -21,7 +21,7 @@ The lab runs on the GNS3 server on the Ubuntu VM (`192.168.56.102:3080`, see [..
                  ┌──────────────┐
                  │  ONOS 2.7.0  │ 10.10.10.1/24
                  └──────┬───────┘
-                   eth0 │ out-of-band management (OpenFlow 1.5, TCP 6653)
+                   eth0 │ out-of-band management (OpenFlow 1.4, TCP 6653)
                    eth0 │ 10.10.10.2/24
                  ┌──────┴───────┐   eth1 (trunk 10,20,30)    ┌────────┐
                  │    OVS-1     ├────────────────────────────┤ FRR-1  │ eth0.10 / .20 / .30
@@ -54,11 +54,32 @@ The lab runs on the GNS3 server on the Ubuntu VM (`192.168.56.102:3080`, see [..
 
 ## Requirements
 
-- **Docker on the GNS3 server.** Both ONOS and OVS are Docker nodes. On the Ubuntu VM, `docker info` must work for the user the GNS3 server runs as.
-- **Internet on the Ubuntu VM** the first time, so it can pull `onosproject/onos:2.7.0` (about 1 GB) and `gns3/openvswitch`.
-- **RAM.** ONOS (Java/Karaf) needs about 2 GB. Give the Ubuntu VM at least 6 GB.
+- **Docker on the GNS3 server.** Both ONOS and OVS are Docker nodes. On the Ubuntu VM:
+
+  ```sh
+  sudo apt-get update && sudo apt-get install -y docker.io
+  sudo usermod -aG docker ubuntu          # the user gns3-server runs as
+  sudo systemctl restart gns3-server
+  docker run --rm hello-world
+  ```
+
+- **Internet on the Ubuntu VM** the first time, so it can pull `onosproject/onos:2.7.0` (1.45 GB) and `gns3/openvswitch` (28 MB). Pulling them ahead with `docker pull` keeps GNS3 from waiting on the download when you add the nodes.
+- **RAM.** ONOS (Java/Karaf) needs about 2 GB. The Ubuntu VM in this lab was raised from 2 GB to 6 GB (VM powered off, then `VBoxManage modifyvm Ubuntu-26.04-Server --memory 6144`).
 
 ONOS 2.7.0 is the last ONOS release line. If Docker Hub has a newer 2.7 patch tag for `onosproject/onos`, you can use it instead; the steps are the same.
+
+## Automated deploy
+
+[deploy.sh](deploy.sh) does sections 1–8 end to end from Windows (Git Bash) or Linux, through the GNS3 REST API and the node consoles. It needs only `curl`, `perl` and `timeout`. It's safe to re-run: every step checks before it changes anything, and the last section runs the ping and ONOS checks.
+
+```sh
+cd topology/ONOS-OVS-Router-On-Stick
+./deploy.sh                     # GNS3=192.168.56.102 by default
+```
+
+A successful run ends with `All checks passed.` Run it again after restarting the project: ONOS starts clean, OVS-1 doesn't keep its bridge settings, and the script puts both back. [notes.sh](notes.sh) puts the text notes next to each node on the canvas (`deploy.sh` calls it).
+
+Do the manual sections below if you want to learn each step.
 
 ---
 
@@ -70,17 +91,17 @@ In GNS3: **Edit → Preferences → Docker → Docker containers → New**.
 
 1. Server: the Ubuntu VM. Image: **New image** → `onosproject/onos:2.7.0`.
 2. Name: `ONOS`. Network adapters: **1**.
-3. Start command: leave empty.
+3. Start command: **`clean`**. This is passed to Karaf, which then wipes ONOS's `data/` folder on every start. Without it, ONOS works on its first start but fails after any stop/start: Atomix reports `Failed to acquire storage lock`, no core services start, and the GUI returns *HTTP 404 /onos/ui*. App activation is stored outside `data/`, so it survives. The VPLS network config doesn't, so re-apply it after a restart (section 5, or re-run `deploy.sh`).
 4. Console type: **http**. HTTP port in the container: **8181**. HTTP path: `/onos/ui`.
 5. Environment variables:
 
    ```
-   ONOS_APPS=drivers,openflow,vpls
+   ONOS_APPS=gui2,drivers,openflow,vpls
    ```
 
-   `openflow` also pulls in the OpenFlow provider, host provider and LLDP provider. `vpls` is the app that builds the VLANs.
+   **Keep `gui2` in the list.** The image only activates the GUI by default when `ONOS_APPS` is unset; if you set it without `gui2`, `/onos/ui` returns 404. `openflow` also pulls in the OpenFlow provider, host provider and LLDP provider. `vpls` is the app that builds the VLANs.
 
-6. Finish. Right-click the template → **Configure** → **Auxiliary console type: telnet** (this is the shell you'll use for the ONOS CLI).
+6. Finish. Docker nodes also get an **Auxiliary console** (telnet) with a shell inside the container, which you'll use for the ONOS CLI.
 
 ### Open vSwitch
 
@@ -88,9 +109,11 @@ In GNS3: **Edit → Preferences → Docker → Docker containers → New**.
 
 ## 2. Build the topology
 
-Drag in ONOS, OVS-1, FRR-1 and three VPCS (PC10, PC20, PC30). Cable them exactly as the topology table says. **Don't start anything yet.**
+Drag in ONOS, OVS-1, FRR-1 and three VPCS (PC10, PC20, PC30). Cable them exactly as the topology table says.
 
-**Set the management IPs.** Right-click the node → **Edit config** (Docker nodes call it *Network configuration*). Uncomment/replace with:
+**Set the management IPs.** GNS3 writes a sample `/etc/network/interfaces` the **first** time a Docker node starts, overwriting anything you saved before that. So start ONOS and OVS-1 once, then right-click each → **Edit config** (*Network configuration*), replace the contents with the block below, and **Stop** then **Start** the node.
+
+> **Use Stop + Start, not Reload, for Docker nodes.** On GNS3 2.2.61 with Docker 29, a reloaded container comes back with only `lo`: no `ethX` interfaces, and the console hangs.
 
 ONOS:
 
@@ -130,7 +153,7 @@ apps -a -s
 
 You should see `org.onosproject.openflow`, `org.onosproject.vpls` and their dependencies. **`org.onosproject.fwd` (reactive forwarding) and `org.onosproject.proxyarp` must not be active**: they would flood between VLANs and break the separation. If either is listed, run `app deactivate org.onosproject.fwd` (or `proxyarp`).
 
-## 4. Configure OVS-1 for ONOS and OpenFlow 1.5
+## 4. Configure OVS-1 for ONOS and OpenFlow 1.4
 
 Start **OVS-1** and open its console.
 
@@ -157,23 +180,23 @@ ovs-vsctl set interface eth3 ofport_request=3
 ovs-vsctl set interface eth4 ofport_request=4
 ```
 
-**4. Set a fixed datapath ID, OpenFlow 1.5, secure fail mode, and the controller:**
+**4. Set a fixed datapath ID, OpenFlow 1.4, secure fail mode, and the controller:**
 
 ```sh
 ovs-vsctl set bridge br0 other-config:datapath-id=0000000000000001
-ovs-vsctl set bridge br0 protocols=OpenFlow15
+ovs-vsctl set bridge br0 protocols=OpenFlow14
 ovs-vsctl set-fail-mode br0 secure
 ovs-vsctl set-controller br0 tcp:10.10.10.1:6653
 ```
 
-- `protocols=OpenFlow15` only, so the switch can't negotiate down to 1.3 and you know the session is really 1.5.
+- `protocols=OpenFlow14` only, so the switch can't negotiate down to 1.3 and you know which version is in use. Don't use `OpenFlow15`; see [Why not OpenFlow 1.5](#why-not-openflow-15).
 - `secure` fail mode means OVS never falls back to acting as a normal learning switch. If ONOS is down, nothing forwards, which proves ONOS is doing the work.
 
 **5. Check the result:**
 
 ```sh
 ovs-vsctl show                         # Controller "tcp:10.10.10.1:6653" with is_connected: true
-ovs-ofctl -O OpenFlow15 show br0       # ports 1(eth1) 2(eth2) 3(eth3) 4(eth4)
+ovs-ofctl -O OpenFlow14 show br0       # ports 1(eth1) 2(eth2) 3(eth3) 4(eth4)
 ```
 
 In the ONOS CLI:
@@ -183,7 +206,7 @@ devices
 ports of:0000000000000001
 ```
 
-`devices` should show `of:0000000000000001 ... available=true ... protocol=OF_15`.
+`devices` should show `of:0000000000000001 ... available=true ... protocol=OF_14`.
 
 ## 5. Define the VLANs in ONOS (VPLS)
 
@@ -324,26 +347,47 @@ flows -s added of:0000000000000001
 
 In the GUI, the Topology view shows the switch and the hosts; press **H** to toggle host display.
 
-**On OVS-1, see the OpenFlow 1.5 rules ONOS installed:**
+**On OVS-1, see the OpenFlow 1.4 rules ONOS installed:**
 
 ```sh
-ovs-ofctl -O OpenFlow15 dump-flows br0
+ovs-ofctl -O OpenFlow14 dump-flows br0
 ```
 
 Look for `push_vlan` / `set_field:...->vlan_vid` on rules matching `in_port=2,3,4`, and `pop_vlan` (or `strip_vlan`) on rules sending to ports 2, 3 and 4.
 
 **Prove ONOS is in control.** Stop the ONOS node and keep a ping running from PC10 to PC20. After the flows time out or are removed, traffic stops, because OVS is in `secure` mode and has no rules of its own. Start ONOS again; once the device reconnects and VPLS reinstalls its intents, the ping resumes.
 
+## Why not OpenFlow 1.5
+
+The lab was first built for OpenFlow 1.5 (spec 1.5.1, wire version 0x06). With `protocols=OpenFlow15` on OVS 2.17.12, ONOS 2.7.0 never keeps the switch:
+
+```
+OVS-1:  rconn|INFO|br0<->tcp:10.10.10.1:6653: connected
+        rconn|INFO|br0<->tcp:10.10.10.1:6653: connection closed by peer       (every ~9 s)
+ONOS:   ERROR [OFChannelHandler] ... state WAIT_METER_FEATURES_REPLY
+        OFParseError: Wrong length: Expected=40(40), got=32
+          at ...protocol.ver15.OFMeterFeaturesStatsReplyVer15$Reader.readFrom
+```
+
+During the handshake ONOS asks for meter features. OpenFlow 1.5.1 extended that reply with a `features` field, making the message 40 bytes. OVS sends the 32-byte OpenFlow 1.3 format at every version, and ONOS's 1.5 decoder rejects it and closes the connection. Neither side has a setting to skip this step, so stock ONOS 2.7 and Open vSwitch can't run OpenFlow 1.5 together.
+
+OpenFlow 1.4 is the highest version that works. It's verified here: `protocol=OF_14`, 15 flow rules, 12 intents, and every inter-VLAN ping routed through FRR-1 with `ttl=63`.
+
 ## Troubleshooting
 
 | Symptom | Cause / fix |
 |---|---|
 | `is_connected` never becomes `true` | Check `ping 10.10.10.1` from OVS-1. In ONOS, check `apps -a -s` includes `org.onosproject.openflow`. ONOS listens on 6653 only after it has fully started (1–2 min). |
-| Device connects with `protocol=OF_13`, not `OF_15` | `protocols` on `br0` still allows 1.3. Set it to exactly `OpenFlow15` and run `ovs-vsctl del-controller br0` then `set-controller` again. |
-| Device won't connect at all with OpenFlow15 only | Try `protocols=OpenFlow13,OpenFlow15` to see if the session comes up; then check `ovs-vsctl list controller` for `status` errors and ONOS `log:tail` for handshake errors. |
-| ONOS port numbers don't match the table | `ofport_request` was set after the ports were numbered. Check `ovs-ofctl -O OpenFlow15 show br0` and either use the real numbers in `interface-add`, or `ovs-vsctl del-port br0 ethX` / `add-port br0 ethX -- set interface ethX ofport_request=N`. |
+| Device connects with `protocol=OF_13`, not `OF_14` | `protocols` on `br0` still allows 1.3. Set it to exactly `OpenFlow14` and run `ovs-vsctl del-controller br0` then `set-controller` again. |
+| With `OpenFlow15`: switch connects and drops every few seconds, `is_connected: false`, `state=BACKOFF`, ONOS log shows `OFParseError: Wrong length: Expected=40(40), got=32` in `WAIT_METER_FEATURES_REPLY` | ONOS 2.7 and OVS can't agree on OpenFlow 1.5 (see [Why not OpenFlow 1.5](#why-not-openflow-15)). Use `protocols=OpenFlow14`. |
+| ONOS port numbers don't match the table | `ofport_request` was set after the ports were numbered. Check `ovs-ofctl -O OpenFlow14 show br0` and either use the real numbers in `interface-add`, or `ovs-vsctl del-port br0 ethX` / `add-port br0 ethX -- set interface ethX ofport_request=N`. |
 | PC can't ping its gateway | `vpls show` must list both interfaces for that VLAN. `hosts` must show FRR on `/1` with that VLAN. On FRR-1, check `ip -d link show eth0.10`. |
 | PCs in different VLANs ping each other **without** going through FRR, or `trace` shows no gateway hop | Something is flooding across VLANs. Deactivate `org.onosproject.fwd` and `org.onosproject.proxyarp`, and check `ovs-vsctl get-fail-mode br0` is `secure`. |
 | Intents stuck in `FAILED` / `WITHDRAWN` | Run `intents -s`. Usually a wrong connect point in `interface-add`. Remove with `vpls rem-if` / `interface-remove` and re-add. |
 | PC reaches its gateway but not the other VLAN | On FRR-1, `sysctl net.ipv4.ip_forward` must be `1` and `show ip route` must list all three subnets. Check each PC has a gateway (`show ip`). |
+| ONOS GUI shows *HTTP ERROR 404 Not Found /onos/ui* (Jetty) | `gui2` isn't active: add it to `ONOS_APPS`. If it **is** listed, check `docker logs` for `Failed to acquire storage lock`: the node needs start command `clean` (section 1). |
+| REST call returns HTTP 415 *Unsupported Media Type* | Don't send `Content-Type: application/json` on a GET; ONOS rejects it. Only send it with a body (POST). |
+| Docker node after **Reload**: console dead, `ip link` shows only `lo` | Known GNS3 2.2.61 + Docker issue. Stop the node, then Start it. |
+| Network config edits are gone after the first start | GNS3 writes a sample file on first start. Edit after the first start, then Stop + Start. |
+| First ping from a PC shows `timeout`, the rest reply | Normal: ONOS learns the host from that first ARP and then installs the unicast intents. |
 | Everything stops after FRR-1 restarts | Subinterfaces aren't persistent. Re-run the `ip link` commands (section 6). |
