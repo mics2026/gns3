@@ -13,6 +13,8 @@ Inter-VLAN routing between VLAN 10 and VLAN 20 using one FRR router connected to
 | VLAN10 | VPCS | telnet `192.168.56.102:5003` | e0 | MVL-L2 Ethernet1 |
 | VLAN20 | VPCS | telnet `192.168.56.102:5005` | e0 | MVL-L2 Ethernet0 |
 
+[notes.sh](notes.sh) adds a text note beside each node in the **FRR-on-Stick** project, with its addresses, ports, role and test commands. It needs only `curl` and `perl` (Git Bash works). It's safe to re-run: it replaces only its own notes and leaves hand-made labels alone.
+
 ## Addressing
 
 | VLAN | Subnet | Gateway (FRR-1) | PC |
