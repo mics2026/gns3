@@ -17,11 +17,9 @@ The lab runs on the GNS3 server on the Ubuntu VM (`192.168.56.102:3080`) as proj
 
 ## Topology
 
-![Inter-VLAN multicast topology](topology.png)
+![VLAN-Multicast-OVS lab running in GNS3 with per-node notes](topology.png)
 
-The diagram shows SW1 as a generic L2 switch with ports `e0`, `e1`, `e2`. On Open vSwitch they are `eth0`, `eth1`, `eth2`.
-
-> **The diagram has one typo.** In the *Devices & Interfaces* table, `eth0.10` shows `192.168.20.1/24`. The correct address is **`192.168.10.1/24`**, as in the left side of the diagram.
+The screenshot shows the running project in the GNS3 web UI. Each node has a note with its addresses, VLANs, role and test commands; [notes.sh](notes.sh) adds them. The original design called SW1's ports `e0`, `e1`, `e2`; on Open vSwitch they are `eth0`, `eth1`, `eth2`. The web UI labels the cable ends by adapter number, so `1/0` on SW1 is eth1.
 
 ### Nodes
 
@@ -62,6 +60,7 @@ VPCS can't send or join multicast, so both hosts must be Linux hosts.
 1. In a new project, add **R1** from the **FRR** template, **SW1** from the **Open vSwitch** template, and two more **FRR** nodes named **VLC-Sender** and **IGMP-Receiver**.
 2. Cable everything as in the links table, using the exact `ethX` ports.
 3. Start all nodes. Without KVM, the FRR nodes take about a minute to boot.
+4. Optional: run [notes.sh](notes.sh) from Git Bash or Linux to put a text note beside each node, with its addresses, VLANs, role and test commands. It needs only `curl` and `perl`, and it's safe to re-run: it replaces its own old notes. Set `GNS3=<server IP>` or `PROJECT_NAME=<name>` if yours differ.
 
 > **Turn off auto-close** if you drive the lab from scripts or the API: right-click the project → **Edit project** → clear **Close the project when the last client leaves**. Otherwise GNS3 closes the project and stops every node when no browser is connected.
 
@@ -177,9 +176,9 @@ sysctl -w net.ipv4.conf.eth0.force_igmp_version=0   # back to the default (v3)
 
 Check unicast first. From the receiver, `ping 192.168.20.10` should get replies through R1.
 
-## 5. Test B: PIM-SM (the diagram)
+## 5. Test B: PIM-SM
 
-The four steps from the diagram's event sequence:
+The test follows four steps:
 
 **① and ② The receiver joins.** On IGMP-Receiver:
 
