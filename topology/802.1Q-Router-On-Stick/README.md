@@ -4,7 +4,9 @@ Inter-VLAN routing between VLAN 10 and VLAN 20 using one FRR router connected to
 
 ## Topology
 
-![Router-on-a-stick topology](FRR-Router-On-Stick.png)
+![FRR-on-Stick lab in GNS3 with per-node notes](FRR-Router-On-Stick.png)
+
+The screenshot shows the **FRR-on-Stick** project in the GNS3 web UI. Each node has a colored note with its addresses, switch ports, role and test commands, added by [notes.sh](notes.sh).
 
 | Node | Type | Console | Port | Connects to |
 |---|---|---|---|---|
