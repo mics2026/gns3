@@ -13,6 +13,8 @@ The stream crosses the trunk twice: up tagged 20, routed by R1, back down tagged
 
 The lab runs on the GNS3 server on the Ubuntu VM (`192.168.56.102:3080`) as project **VLAN-Multicast-OVS**.
 
+**Concepts and checks:** [Multicast-Concepts.md](Multicast-Concepts.md) covers why PIM-SM needs an RP (and how static multicast differs), how to read `show ip mroute` and its (\*,G) and (S,G) entries, how long entries stay, who sends IGMP queries, IGMP vs IGMP snooping, the FRR commands to check multicast, and common mistakes with the VLC scripts.
+
 > **Why not a Cisco IOSvL2 or Arista vEOS switch?** Both need KVM. Turning on VirtualBox nested virtualization gives the Ubuntu VM `/dev/kvm`, but on this AMD host the VM crashed (`VERR_SVM_UNKNOWN_EXIT`) as soon as GNS3 started KVM nodes. The server runs QEMU without KVM, so the lab uses Open vSwitch, a lightweight Docker container.
 
 ## Topology
