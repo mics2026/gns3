@@ -1,0 +1,87 @@
+{
+    "appliance_id": "f8186e9a-5145-4da0-ac18-b5b13cf57d3b",
+    "name": "CentOS Cloud Guest",
+    "category": "guest",
+    "description": "CentOS official image for self-hosted cloud",
+    "vendor_name": "The CentOS Project",
+    "vendor_url": "https://www.centos.org/",
+    "documentation_url": "https://wiki.centos.org/Documentation",
+    "product_name": "Centos Cloud",
+    "product_url": "https://wiki.centos.org/Cloud",
+    "registry_version": 8,
+    "status": "stable",
+    "maintainer": "GNS3 Team",
+    "maintainer_email": "developers@gns3.net",
+    "usage": "Username: centos or cloud-user\nPassword: centos",
+    "default_username": "cloud-user",
+    "default_password": "centos",
+    "settings": [
+        {
+            "name": "default",
+            "default": true,
+            "template_type": "qemu",
+            "template_properties": {
+                "platform": "x86_64",
+                "port_name_format": "Ethernet{0}",
+                "adapter_type": "virtio-net-pci",
+                "adapters": 1,
+                "ram": 1024,
+                "hda_disk_interface": "virtio",
+                "console_type": "telnet",
+                "options": "-cpu host"
+            }
+        },
+        {
+            "name": "aarch64",
+            "template_type": "qemu",
+            "template_properties": {
+                "platform": "aarch64",
+                "uefi": true,
+                "options": "-cpu max"
+            }
+        }
+    ],
+    "images": [
+        {
+            "filename": "CentOS-Stream-GenericCloud-10-20261106.0.x86_64.qcow2",
+            "version": "Stream-10 (x86_64)",
+            "md5sum": "8fff47fd4e4591547e79419786b50121",
+            "filesize": 1044709376,
+            "download_url": "https://cloud.centos.org/centos/10-stream/x86_64/images",
+            "direct_download_url": "https://cloud.centos.org/centos/10-stream/x86_64/images/CentOS-Stream-GenericCloud-10-20261106.0.x86_64.qcow2"
+        },
+        {
+            "filename": "CentOS-Stream-GenericCloud-10-20261106.0.aarch64.qcow2",
+            "version": "Stream-10 (aarch64)",
+            "md5sum": "099bb65625e28f8bc0bd143839202cc8",
+            "filesize": 884211712,
+            "download_url": "https://cloud.centos.org/centos/10-stream/aarch64/images",
+            "direct_download_url": "https://cloud.centos.org/centos/10-stream/aarch64/images/CentOS-Stream-GenericCloud-10-20261106.0.aarch64.qcow2"
+        },
+        {
+            "filename": "centos-cloud-init-data.iso",
+            "version": "1.1",
+            "md5sum": "59ea8223fd659d8bce9081ff175912e9",
+            "filesize": 374784,
+            "download_url": "https://github.com/GNS3/gns3-registry/tree/master/cloud-init/centos-cloud",
+            "direct_download_url": "https://github.com/GNS3/gns3-registry/raw/master/cloud-init/centos-cloud/centos-cloud-init-data.iso"
+        }
+    ],
+    "versions": [
+        {
+            "name": "Stream-10 (x86_64)",
+            "images": {
+                "hda_disk_image": "CentOS-Stream-GenericCloud-10-20261106.0.x86_64.qcow2",
+                "cdrom_image": "centos-cloud-init-data.iso"
+            }
+        },
+        {
+            "name": "Stream-10 (aarch64)",
+            "settings": "arm64",
+            "images": {
+                "hda_disk_image": "CentOS-Stream-GenericCloud-10-20261106.0.aarch64.qcow2",
+                "cdrom_image": "centos-cloud-init-data.iso"
+            }
+        }
+    ]
+}

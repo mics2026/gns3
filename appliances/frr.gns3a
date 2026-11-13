@@ -1,0 +1,71 @@
+{
+    "appliance_id": "64f3dd9e-77bf-492c-a245-26d2a0e9bde8",
+    "name": "FRR",
+    "category": "router",
+    "description": "FRRouting (FRR) is an IP routing protocol suite for Linux and Unix platforms which includes protocol daemons for BGP, IS-IS, LDP, OSPF, PIM, and RIP.\n\nFRR's seamless integration with the native Linux/Unix IP networking stacks makes it applicable to a wide variety of use cases including connecting hosts/VMs/containers to the network, advertising network services, LAN switching and routing, Internet access routers, and Internet peering.\n\nThis is an unofficial VM of FRR.",
+    "vendor_name": "FRRouting Project",
+    "vendor_url": "https://frrouting.org",
+    "product_name": "FRR",
+    "registry_version": 8,
+    "status": "stable",
+    "maintainer": "GNS3 Team",
+    "maintainer_email": "developers@gns3.net",
+    "usage": "Credentials: root / root\nIf you exit from the router CLI, you can get back by typing 'vtysh' to the console.",
+    "settings": [
+        {
+            "name": "default",
+            "default": true,
+            "template_type": "qemu",
+            "template_properties": {
+                "platform": "x86_64",
+                "port_name_format": "eth{0}",
+                "adapter_type": "e1000",
+                "adapters": 8,
+                "ram": 256,
+                "hda_disk_interface": "virtio",
+                "console_type": "telnet"
+            }
+        },
+        {
+            "name": "aarch64",
+            "template_type": "qemu",
+            "template_properties": {
+                "platform": "aarch64",
+                "uefi": true
+            }
+        }
+    ],
+    "images": [
+        {
+            "filename": "alpine-virt-3.24.3-frr-10.6.1-x86_64.qcow2",
+            "version": "10.6.1 (x86_64)",
+            "md5sum": "0531957387fd3d7d2938142ff28974d6",
+            "filesize": 80178176,
+            "download_url": "https://sourceforge.net/projects/gns-3/files/Qemu%20Appliances/",
+            "direct_download_url": "http://downloads.sourceforge.net/project/gns-3/Qemu%20Appliances/alpine/alpine-virt-3.24.3-frr-10.6.1-x86_64.qcow2"
+        },
+        {
+            "filename": "alpine-virt-3.24.3-frr-10.6.1-aarch64.qcow2",
+            "version": "10.6.1 (aarch64)",
+            "md5sum": "0be058fd2737b3d9aa4ae1fcab736e86",
+            "filesize": 88279040,
+            "download_url": "https://sourceforge.net/projects/gns-3/files/Qemu%20Appliances/",
+            "direct_download_url": "http://downloads.sourceforge.net/project/gns-3/Qemu%20Appliances/alpine/alpine-virt-3.24.3-frr-10.6.1-aarch64.qcow2"
+        }
+    ],
+    "versions": [
+        {
+            "name": "10.6.1 (x86_64)",
+            "images": {
+                "hda_disk_image": "alpine-virt-3.24.3-frr-10.6.1-x86_64.qcow2"
+            }
+        },
+        {
+            "name": "10.6.1 (aarch64)",
+            "settings": "aarch64",
+            "images": {
+                "hda_disk_image": "alpine-virt-3.24.3-frr-10.6.1-aarch64.qcow2"
+            }
+        }
+    ]
+}

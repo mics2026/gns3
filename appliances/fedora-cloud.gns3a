@@ -1,0 +1,85 @@
+{
+    "appliance_id": "0d505121-14e3-4414-88ab-b7f102ea6176",
+    "name": "Fedora Cloud Base",
+    "category": "guest",
+    "description": "Fedora Official image for self-hosted cloud",
+    "vendor_name": "The Fedora Project",
+    "vendor_url": "https://getfedora.org/",
+    "documentation_url": "https://docs.fedoraproject.org/en-US/docs/",
+    "product_name": "Fedora Cloud Base",
+    "product_url": "https://alt.fedoraproject.org/cloud/",
+    "registry_version": 8,
+    "status": "stable",
+    "maintainer": "Da-Geek",
+    "maintainer_email": "dageek@dageeks-geeks.gg",
+    "usage": "Username: fedora\nPassword: fedora",
+    "default_username": "fedora",
+    "default_password": "fedora",
+    "settings": [
+        {
+            "name": "default",
+            "default": true,
+            "template_type": "qemu",
+            "template_properties": {
+                "platform": "x86_64",
+                "port_name_format": "Ethernet{0}",
+                "adapter_type": "virtio-net-pci",
+                "adapters": 1,
+                "ram": 1024,
+                "hda_disk_interface": "virtio",
+                "console_type": "telnet"
+            }
+        },
+        {
+            "name": "aarch64",
+            "template_type": "qemu",
+            "template_properties": {
+                "platform": "aarch64",
+                "uefi": true
+            }
+        }
+    ],
+    "images": [
+        {
+            "filename": "Fedora-Cloud-Base-Generic-45-1.4.x86_64.qcow2",
+            "version": "45-1.4 (x86_64)",
+            "md5sum": "8142712b926c0cd461fd51fdf14df22b",
+            "filesize": 606732288,
+            "download_url": "https://download.fedoraproject.org/pub/fedora/linux/releases/45/Cloud/x86_64/images",
+            "direct_download_url": "https://fedora.mirrorservice.org/fedora/linux/releases/45/Cloud/x86_64/images/Fedora-Cloud-Base-Generic-45-1.4.x86_64.qcow2"
+        },
+        {
+            "filename": "Fedora-Cloud-Base-Generic-45-1.4.aarch64.qcow2",
+            "version": "45-1.4 (aarch64)",
+            "md5sum": "0496a2a81e577c52c95b9b4f04381bdb",
+            "filesize": 596705280,
+            "download_url": "https://download.fedoraproject.org/pub/fedora/linux/releases/45/Cloud/aarch64/images",
+            "direct_download_url": "https://fedora.mirrorservice.org/fedora/linux/releases/45/Cloud/aarch64/images/Fedora-Cloud-Base-Generic-45-1.4.aarch64.qcow2"
+        },
+        {
+            "filename": "fedora-cloud-init-data.iso",
+            "version": "1.0",
+            "md5sum": "3d0d6391d3f5ece1180c70b9667c4dca",
+            "filesize": 374784,
+            "download_url": "https://github.com/GNS3/gns3-registry/tree/master/cloud-init/fedora-cloud",
+            "direct_download_url": "https://github.com/GNS3/gns3-registry/raw/master/cloud-init/fedora-cloud/fedora-cloud-init-data.iso"
+        }
+    ],
+    "versions": [
+        {
+            "name": "45-1.4 (x86_64)",
+            "images": {
+                "hda_disk_image": "Fedora-Cloud-Base-Generic-45-1.4.x86_64.qcow2",
+                "cdrom_image": "fedora-cloud-init-data.iso"
+            }
+        },
+        {
+            "name": "45-1.4 (aarch64)",
+            "settings": "aarch64",
+            "images": {
+                "hda_disk_image": "Fedora-Cloud-Base-Generic-45-1.4.aarch64.qcow2",
+                "cdrom_image": "fedora-cloud-init-data.iso"
+            }
+        }
+    ]
+}

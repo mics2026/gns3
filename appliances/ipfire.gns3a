@@ -1,0 +1,75 @@
+{
+    "appliance_id": "286b3ba3-6646-41d2-b67c-dd6de9da8a5a",
+    "name": "IPFire",
+    "category": "firewall",
+    "description": "IPFire was designed with both modularity and a high-level of flexibility in mind. You can easily deploy many variations of it, such as a firewall, a proxy server or a VPN gateway. The modular design ensures that it runs exactly what you've configured it for and nothing more. Everything is simple to manage and update through the package manager, making maintenance a breeze.",
+    "vendor_name": "IPFire Project",
+    "vendor_url": "http://www.ipfire.org/",
+    "documentation_url": "http://wiki.ipfire.org/en/start",
+    "product_name": "IPFire",
+    "product_url": "http://www.ipfire.org/features",
+    "registry_version": 8,
+    "status": "stable",
+    "maintainer": "GNS3 Team",
+    "maintainer_email": "developers@gns3.net",
+    "usage": "A config wizard will be started at first boot.",
+    "settings": [
+        {
+            "name": "default",
+            "default": true,
+            "template_type": "qemu",
+            "template_properties": {
+                "platform": "x86_64",
+                "port_name_format": "eth{0}",
+                "adapter_type": "virtio-net-pci",
+                "adapters": 4,
+                "ram": 1024,
+                "hda_disk_interface": "virtio",
+                "console_type": "vnc"
+            }
+        },
+        {
+            "name": "aarch64",
+            "template_type": "qemu",
+            "template_properties": {
+                "platform": "aarch64",
+                "uefi": true
+            }
+        }
+    ],
+    "images": [
+        {
+            "filename": "ipfire-2.29-core205-x86_64.img",
+            "version": "2.29.205 (x86_64)",
+            "md5sum": "edfdfea72bfc70c506b422f3cd23effe",
+            "filesize": 3359637504,
+            "download_url": "http://www.ipfire.org/download",
+            "direct_download_url": "https://downloads.ipfire.org/releases/ipfire-2.x/2.29-core205/ipfire-2.29-core205-x86_64.img.xz",
+            "compression": "xz"
+        },
+        {
+            "filename": "ipfire-2.29-core205-aarch64.img",
+            "version": "2.29.205 (aarch64)",
+            "md5sum": "d422813d8bbf0b9c97d3c0b773a816f2",
+            "filesize": 3359637504,
+            "download_url": "http://www.ipfire.org/download",
+            "direct_download_url": "https://downloads.ipfire.org/releases/ipfire-2.x/2.29-core205/ipfire-2.29-core205-aarch64.img.xz",
+            "compression": "xz"
+        }
+    ],
+    "versions": [
+        {
+            "name": "2.29.305 (x86_64)",
+            "images": {
+                "hda_disk_image": "ipfire-2.29-core205-x86_64.img"
+            }
+        },
+        {
+            "name": "2.29.305 (aarch64)",
+            "settings": "aarch64",
+            "images": {
+                "hda_disk_image": "ipfire-2.29-core205-aarch64.img"
+            }
+        }
+    ]
+}

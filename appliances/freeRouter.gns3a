@@ -1,0 +1,44 @@
+{
+    "appliance_id": "691f6552-725f-4dff-a2ba-220f5e3ab6a6",
+    "name": "freeRouter",
+    "category": "router",
+    "description": "networking swiss army knife - it speaks routing protocols, and (re)encapsulates packets on interfaces",
+    "vendor_name": "freeRouter",
+    "vendor_url": "http://freerouter.nop.hu/",
+    "documentation_url": "http://freerouter.nop.hu/",
+    "product_name": "freeRouter",
+    "product_url": "http://freerouter.nop.hu/",
+    "registry_version": 4,
+    "status": "stable",
+    "maintainer": "GNS3 Team",
+    "maintainer_email": "developers@gns3.net",
+    "usage": "There is no default password and enable password. A default configuration is present.",
+    "port_name_format": "ethernet{port1}",
+    "qemu": {
+        "adapter_type": "e1000",
+        "adapters": 8,
+        "ram": 2048,
+        "hda_disk_interface": "ide",
+        "arch": "x86_64",
+        "console_type": "telnet",
+        "kvm": "require"
+    },
+    "images": [
+        {
+            "filename": "rtr-x86_64.qcow2",
+            "version": "25.8.29",
+            "md5sum": "13d72fdfd772258808a9d4b75fa67083",
+            "filesize": 73269248,
+            "download_url": "http://www.freertr.org/",
+            "direct_download_url": "http://dl.nop.hu/rtr-x86_64.qcow2"
+        }
+    ],
+    "versions": [
+        {
+            "name": "25.8.29",
+            "images": {
+                "hda_disk_image": "rtr-x86_64.qcow2"
+            }
+        }
+    ]
+}

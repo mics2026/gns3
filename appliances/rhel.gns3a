@@ -1,0 +1,180 @@
+{
+    "appliance_id": "0c8708a6-ff48-489b-8e61-4c1b06c300e7",
+    "name": "RHEL",
+    "category": "guest",
+    "description": "Red Hat Enterprise Linux Server provides core operating system functions and capabilities for application infrastructure.",
+    "vendor_name": "Red Hat",
+    "vendor_url": "https://redhat.com",
+    "documentation_url": "https://access.redhat.com/solutions/641193",
+    "product_name": "Red Hat Enterprise Linux KVM Guest Image",
+    "product_url": "https://www.redhat.com/en/technologies/linux-platforms/enterprise-linux",
+    "registry_version": 4,
+    "status": "stable",
+    "availability": "service-contract",
+    "maintainer": "Da-Geek",
+    "maintainer_email": "dageek@dageeks-geeks.gg",
+    "usage": "You should download Red Hat Enterprise Linux KVM Guest Image from https://access.redhat.com/downloads/content/rhel attach/customize rhel-cloud-init.iso and start.\nusername: cloud-user\npassword: redhat",
+    "qemu": {
+        "adapter_type": "virtio-net-pci",
+        "adapters": 1,
+        "ram": 1536,
+        "hda_disk_interface": "virtio",
+        "arch": "x86_64",
+        "console_type": "telnet",
+        "boot_priority": "c",
+        "kvm": "require",
+        "options": "-cpu host -nographic"
+    },
+    "images": [
+        {
+            "filename": "rhel-10.1-x86_64-kvm.qcow2",
+            "version": "10.1",
+            "md5sum": "b2f35b1ac0600de31cadf30a622a2fef",
+            "filesize": 1010827264,
+            "download_url": "https://access.redhat.com/downloads/content/479/ver=/rhel---10/10.1/x86_64/product-software"
+        },
+        {
+            "filename": "rhel-10.0-x86_64-kvm.qcow2",
+            "version": "10.0",
+            "md5sum": "ea5918fa116ec53f9ef1ce4be69ae2be",
+            "filesize": 855506944,
+            "download_url": "https://access.redhat.com/downloads/content/479/ver=/rhel---10/10.0/x86_64/product-software"
+        },
+        {
+            "filename": "rhel-9.7-x86_64-kvm.qcow2",
+            "version": "9.7",
+            "md5sum": "abc2f42cc5daeea6b03d0d2d478a0d1c",
+            "filesize": 1229979648,
+            "download_url": "https://access.redhat.com/downloads/content/479/ver=/rhel---9/9.7/x86_64/product-software"
+        },
+        {
+            "filename": "rhel-9.6-x86_64-kvm.qcow2",
+            "version": "9.6",
+            "md5sum": "056648d716275053ebe77b1d4f68c862",
+            "filesize": 1060438016,
+            "download_url": "https://access.redhat.com/downloads/content/479/ver=/rhel---9/9.6/x86_64/product-software"
+        },
+        {
+            "filename": "rhel-9.4-x86_64-kvm.qcow2",
+            "version": "9.4",
+            "md5sum": "77a2ca9a4cb0448260e04f0d2ebf9807",
+            "filesize": 957218816,
+            "download_url": "https://access.redhat.com/downloads/content/479/ver=/rhel---9/9.4/x86_64/product-software"
+        },
+        {
+            "filename": "rhel-8.10-x86_64-kvm.qcow2",
+            "version": "8.10",
+            "md5sum": "5fda99fcab47e3b235c6ccdb6e80d362",
+            "filesize": 1065091072,
+            "download_url": "https://access.redhat.com/downloads/content/479/ver=/rhel---8/8.10/x86_64/product-software"
+        },
+        {
+            "filename": "rhel-8.8-x86_64-kvm.qcow2",
+            "version": "8.8",
+            "md5sum": "bf22af816ba6abd846bbb0c9ecf7bce1",
+            "filesize": 926810112,
+            "download_url": "https://access.redhat.com/downloads/content/479/ver=/rhel---8/8.8/x86_64/product-software"
+        },
+        {
+            "filename": "rhel-8.6-x86_64-kvm.qcow2",
+            "version": "8.6",
+            "md5sum": "19501666f46df6b5472db1254e86a339",
+            "filesize": 832438272,
+            "download_url": "https://access.redhat.com/downloads/content/479/ver=/rhel---8/8.6/x86_64/product-software"
+        },
+        {
+            "filename": "rhel-server-7.9-update-12-x86_64-kvm.qcow2",
+            "version": "7.9",
+            "md5sum": "f77fc7e3cf31a210a8244e486466ce34",
+            "filesize": 838036992,
+            "download_url": "https://access.redhat.com/downloads/content/69/ver=/rhel---7/7.9/x86_64/product-software"
+        },
+        {
+            "filename": "rhel-server-6.10-update-11-x86_64-kvm.qcow2",
+            "version": "6.10",
+            "md5sum": "6d672026d3a0eae794a677a18287f9c0",
+            "filesize": 341442560,
+            "download_url": "https://access.redhat.com/downloads/content/69/ver=/rhel---6/6.10/x86_64/product-software"
+        },
+        {
+            "filename": "rhel-cloud-init.iso",
+            "version": "1.1",
+            "md5sum": "f1f908d36e67f843dd94db1c2e8c8373",
+            "filesize": 374784,
+            "download_url": "https://github.com/GNS3/gns3-registry/tree/master/cloud-init/rhel",
+            "direct_download_url": "https://github.com/GNS3/gns3-registry/raw/master/cloud-init/rhel/rhel-cloud-init.iso"
+        }
+    ],
+    "versions": [
+        {
+            "name": "10.1",
+            "images": {
+                "hda_disk_image": "rhel-10.1-x86_64-kvm.qcow2",
+                "cdrom_image": "rhel-cloud-init.iso"
+            }
+        },
+        {
+            "name": "10.0",
+            "images": {
+                "hda_disk_image": "rhel-10.0-x86_64-kvm.qcow2",
+                "cdrom_image": "rhel-cloud-init.iso"
+            }
+        },
+        {
+            "name": "9.7",
+            "images": {
+                "hda_disk_image": "rhel-9.7-x86_64-kvm.qcow2",
+                "cdrom_image": "rhel-cloud-init.iso"
+            }
+        },
+        {
+            "name": "9.6",
+            "images": {
+                "hda_disk_image": "rhel-9.6-x86_64-kvm.qcow2",
+                "cdrom_image": "rhel-cloud-init.iso"
+            }
+        },
+        {
+            "name": "9.4",
+            "images": {
+                "hda_disk_image": "rhel-9.4-x86_64-kvm.qcow2",
+                "cdrom_image": "rhel-cloud-init.iso"
+            }
+        },
+        {
+            "name": "8.10",
+            "images": {
+                "hda_disk_image": "rhel-8.10-x86_64-kvm.qcow2",
+                "cdrom_image": "rhel-cloud-init.iso"
+            }
+        },
+        {
+            "name": "8.8",
+            "images": {
+                "hda_disk_image": "rhel-8.8-x86_64-kvm.qcow2",
+                "cdrom_image": "rhel-cloud-init.iso"
+            }
+        },
+        {
+            "name": "8.6",
+            "images": {
+                "hda_disk_image": "rhel-8.6-x86_64-kvm.qcow2",
+                "cdrom_image": "rhel-cloud-init.iso"
+            }
+        },
+        {
+            "name": "7.9",
+            "images": {
+                "hda_disk_image": "rhel-server-7.9-update-12-x86_64-kvm.qcow2",
+                "cdrom_image": "rhel-cloud-init.iso"
+            }
+        },
+        {
+            "name": "6.10",
+            "images": {
+                "hda_disk_image": "rhel-server-6.10-update-11-x86_64-kvm.qcow2",
+                "cdrom_image": "rhel-cloud-init.iso"
+            }
+        }
+    ]
+}

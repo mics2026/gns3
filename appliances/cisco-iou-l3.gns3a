@@ -1,0 +1,75 @@
+{
+    "appliance_id": "87bf6f58-1e5a-4ee2-afe7-715dabffcf18",
+    "tags": ["device_type:cisco_ios_telnet"],
+    "name": "Cisco IOU L3",
+    "category": "router",
+    "description": "Cisco IOS on UNIX Layer 3 image.",
+    "vendor_name": "Cisco",
+    "vendor_url": "http://www.cisco.com",
+    "documentation_url": "https://developer.cisco.com/docs/modeling-labs/iol/",
+    "product_name": "Cisco IOU L3",
+    "product_url": "https://developer.cisco.com/modeling-labs/",
+    "registry_version": 4,
+    "status": "experimental",
+    "maintainer": "GNS3 Team",
+    "maintainer_email": "developers@gns3.net",
+    "iou": {
+        "ethernet_adapters": 2,
+        "serial_adapters": 2,
+        "nvram": 256,
+        "ram": 1024,
+        "startup_config": "iou_l3_base_startup-config.txt"
+    },
+    "images": [
+        {
+            "filename": "x86_64_crb_linux-adventerprisek9-ms.17.18.2.iol",
+            "version": "17.18.2",
+            "md5sum": "34bf876c5b3c60f3ef4eb28eb8a176d7",
+            "filesize": 293729288
+        },
+        {
+            "filename": "x86_64_crb_linux-adventerprisek9-ms.17.16.1a.iol",
+            "version": "17.16.1a",
+            "md5sum": "39bdf959c3b99a3c81d66451f1cf0404",
+            "filesize": 293062920
+        },
+        {
+            "filename": "x86_64_crb_linux-adventerprisek9-ms.iol",
+            "version": "17.15.1",
+            "md5sum": "5d584f6cfbeaadc87d55f613da1049ed",
+            "filesize": 292001512
+        },
+        {
+            "filename": "x86_64_crb_linux-adventerprisek9-ms",
+            "version": "17.12.1",
+            "md5sum": "4a2fce8de21d1831fbceffd155e41ae7",
+            "filesize": 288947184
+        }
+    ],
+    "versions": [
+        {
+            "name": "17.18.2",
+            "images": {
+                "image": "x86_64_crb_linux-adventerprisek9-ms.17.18.2.iol"
+            }
+        },
+        {
+            "name": "17.16.1a",
+            "images": {
+                "image": "x86_64_crb_linux-adventerprisek9-ms.17.16.1a.iol"
+            }
+        },
+        {
+            "name": "17.15.1",
+            "images": {
+                "image": "x86_64_crb_linux-adventerprisek9-ms.iol"
+            }
+        },
+        {
+            "name": "17.12.1",
+            "images": {
+                "image": "x86_64_crb_linux-adventerprisek9-ms"
+            }
+        }
+    ]
+}

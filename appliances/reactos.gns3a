@@ -1,0 +1,52 @@
+{
+    "appliance_id": "c811e588-39ef-41e9-9f60-6e8e08618c3d",
+    "name": "ReactOS",
+    "category": "guest",
+    "description": "Imagine running your favorite Windows applications and drivers in an open-source environment you can trust.\nThat's the mission of ReactOS! ",
+    "vendor_name": "ReactOS Project",
+    "vendor_url": "https://reactos.org/",
+    "documentation_url": "https://reactos.org/what-is-reactos/",
+    "product_name": "ReactOS",
+    "product_url": "https://reactos.org/",
+    "registry_version": 4,
+    "status": "stable",
+    "maintainer": "Savio D'souza",
+    "maintainer_email": "savio2002@yahoo.co.in",
+    "usage": "Passwords are set during installation.",
+    "qemu": {
+        "adapter_type": "e1000",
+        "adapters": 1,
+        "ram": 1024,
+        "hda_disk_interface": "ide",
+        "arch": "x86_64",
+        "console_type": "vnc",
+        "kvm": "require"
+    },
+    "images": [
+        {
+            "filename": "ReactOS-0.4.16-i386.iso",
+            "version": "0.4.16-i386",
+            "md5sum": "20fd12cea301653e0240c6950a8aac66",
+            "filesize": 406847488,
+            "download_url": "https://reactos.org/download",
+            "direct_download_url": "https://sourceforge.net/projects/reactos/files/ReactOS/0.4.16/ReactOS-0.4.16-i386.iso/download"
+        },
+        {
+            "filename": "empty30G.qcow2",
+            "version": "1.0",
+            "md5sum": "3411a599e822f2ac6be560a26405821a",
+            "filesize": 197120,
+            "download_url": "https://sourceforge.net/projects/gns-3/files/Empty%20Qemu%30disk/",
+            "direct_download_url": "https://sourceforge.net/projects/gns-3/files/Empty%20Qemu%20disk/empty30G.qcow2/download"
+        }
+    ],
+    "versions": [
+        {
+            "name": "0.4.16-i386",
+            "images": {
+                "hda_disk_image": "empty30G.qcow2",
+                "cdrom_image": "ReactOS-0.4.16-i386.iso"
+            }
+        }
+    ]
+}

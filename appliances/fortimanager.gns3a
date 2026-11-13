@@ -1,0 +1,85 @@
+{
+    "appliance_id": "b9ce377f-6a6c-497a-a12d-444936a575c3",
+    "name": "FortiManager",
+    "category": "guest",
+    "description": "FortiManager Security Management appliances allow you to centrally manage any number of Fortinet Network Security devices, from several to thousands, including FortiGate, FortiWiFi, and FortiCarrier.",
+    "vendor_name": "Fortinet",
+    "vendor_url": "http://www.fortinet.com/",
+    "vendor_logo_url": "https://raw.githubusercontent.com/GNS3/gns3-registry/master/vendor-logos/FortiManager.jpg",
+    "documentation_url": "http://docs.fortinet.com/p/inside-fortios",
+    "product_name": "FortiManager",
+    "product_url": "http://www.fortinet.com/products/fortimanager/virtual-security-management.html",
+    "registry_version": 4,
+    "status": "stable",
+    "maintainer": "Ean Towne",
+    "maintainer_email": "ean.fortinet@gmail.com",
+    "usage": "Default username is admin, no password is set.\n\n- Versions lower than 7.0.x require less CPU/RAM\n7.4.x may require 16GB RAM.",
+    "symbol": "fortinet.svg",
+    "port_name_format": "Port{port1}",
+    "qemu": {
+        "adapter_type": "virtio-net-pci",
+        "adapters": 4,
+        "ram": 8192,
+        "cpus": 4,
+        "hda_disk_interface": "virtio",
+        "hdb_disk_interface": "virtio",
+        "arch": "x86_64",
+        "console_type": "telnet",
+        "boot_priority": "c",
+        "kvm": "allow"
+    },
+    "images": [
+        {
+            "filename": "FMG_VM64_KVM-v7.4.6.M-build2588-FORTINET.out.kvm.qcow2",
+            "version": "7.4.6",
+            "md5sum": "7cb219e1070d393f61cf750d818b23b1",
+            "filesize": 349122560,
+            "download_url": "https://support.fortinet.com/Download/FirmwareImages.aspx"
+        },
+        {
+            "filename": "FMG_VM64_KVM-v7.4.5.M-build2553-FORTINET.out.kvm.qcow2",
+            "version": "7.4.5",
+            "md5sum": "fa59ddce0cb933741f16866472026723",
+            "filesize": 349769728,
+            "download_url": "https://support.fortinet.com/Download/FirmwareImages.aspx"
+        },
+        {
+            "filename": "FMG_VM64_KVM-v7.4.4.F-build2550-FORTINET.out.kvm.qcow2",
+            "version": "7.4.4",
+            "md5sum": "770727bb30555e6938308bbf95f19555",
+            "filesize": 349847552,
+            "download_url": "https://support.fortinet.com/Download/FirmwareImages.aspx"
+        },
+        {
+            "filename": "empty500G.qcow2",
+            "version": "1.0",
+            "md5sum": "658c825441b9b3080ba00f9eec002eaa",
+            "filesize": 204608,
+            "download_url": "https://sourceforge.net/projects/gns-3/files/Empty%20Qemu%20disk/",
+            "direct_download_url": "https://sourceforge.net/projects/gns-3/files/Empty%20Qemu%20disk/empty500G.qcow2/download"
+        }
+    ],
+    "versions": [
+        {
+            "name": "7.4.6",
+            "images": {
+                "hda_disk_image": "FMG_VM64_KVM-v7.4.6.M-build2588-FORTINET.out.kvm.qcow2",
+                "hdb_disk_image": "empty500G.qcow2"
+            }
+        },
+        {
+            "name": "7.4.5",
+            "images": {
+                "hda_disk_image": "FMG_VM64_KVM-v7.4.5.M-build2553-FORTINET.out.kvm.qcow2",
+                "hdb_disk_image": "empty500G.qcow2"
+            }
+        },
+        {
+            "name": "7.4.4",
+            "images": {
+                "hda_disk_image": "FMG_VM64_KVM-v7.4.4.F-build2550-FORTINET.out.kvm.qcow2",
+                "hdb_disk_image": "empty500G.qcow2"
+            }
+        }
+    ]
+}
