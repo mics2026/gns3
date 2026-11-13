@@ -1,0 +1,29 @@
+#!/bin/sh
+# mcast-sender - VLC-Sender: stream the test clip to a multicast group.
+# Install: copy to /usr/local/bin/mcast-sender and chmod +x. Run as root.
+# Usage:   mcast-sender start | stop | status
+# Override: GROUP=232.1.1.1 mcast-sender start   (also PORT, TTL, CLIP)
+GROUP=${GROUP:-239.1.1.1}
+PORT=${PORT:-5004}
+TTL=${TTL:-16}                       # Linux default is 1, which R1 would drop
+CLIP=${CLIP:-/home/vlc/bbb.mp4}
+LOG=/tmp/vlc-tx.log
+PAT="vlc -I dummy"                   # matches the running VLC, not this script
+
+case "${1:-start}" in
+  start)
+    command -v cvlc >/dev/null || { echo "VLC not installed (see README step 5)"; exit 1; }
+    [ -f "$CLIP" ] || { echo "clip $CLIP not found"; exit 1; }
+    pkill -f "$PAT" 2>/dev/null; sleep 1
+    # VLC refuses to run as root, so run it as user vlc.
+    su vlc -c "cvlc -I dummy --loop $CLIP --sout '#std{access=udp,mux=ts,dst=$GROUP:$PORT}' --ttl=$TTL" > $LOG 2>&1 &
+    sleep 2
+    if pgrep -f "$PAT" >/dev/null; then echo "sending $CLIP to $GROUP:$PORT, TTL $TTL (log $LOG)"
+    else echo "VLC did not start, see $LOG"; exit 1; fi ;;
+  stop)
+    pkill -f "$PAT" && echo "sender stopped" || echo "sender not running" ;;
+  status)
+    pgrep -f "$PAT" >/dev/null && echo "sender running" || echo "sender stopped" ;;
+  *)
+    echo "usage: $0 start|stop|status"; exit 1 ;;
+esac

@@ -1,0 +1,38 @@
+#!/bin/sh
+# mcast-receiver - IGMP-Receiver: join a multicast group with VLC and save the stream.
+# Install: copy to /usr/local/bin/mcast-receiver and chmod +x. Run as root.
+# Usage:   mcast-receiver start | stop | status | check
+# Override: GROUP=239.1.1.1 PORT=5004 OUT=/tmp/rx.ts
+#           SOURCE=192.168.20.10 GROUP=232.1.1.1 mcast-receiver start   (SSM, IGMPv3)
+GROUP=${GROUP:-239.1.1.1}
+PORT=${PORT:-5004}
+SOURCE=${SOURCE:-}                   # set for an SSM (source-specific) join
+OUT=${OUT:-/tmp/rx.ts}
+LOG=/tmp/vlc-rx.log
+PAT="vlc -I dummy"                   # matches the running VLC, not this script
+
+size() { stat -c %s "$OUT" 2>/dev/null || echo 0; }
+
+case "${1:-start}" in
+  start)
+    command -v cvlc >/dev/null || { echo "VLC not installed (see README step 5)"; exit 1; }
+    pkill -f "$PAT" 2>/dev/null; sleep 1
+    rm -f "$OUT"
+    # VLC sends the IGMP join itself. SOURCE@GROUP makes it a source-specific join.
+    su vlc -c "cvlc -I dummy udp://$SOURCE@$GROUP:$PORT --sout file/ts:$OUT" > $LOG 2>&1 &
+    sleep 2
+    if pgrep -f "$PAT" >/dev/null; then echo "receiving ${SOURCE:+$SOURCE }$GROUP:$PORT into $OUT (log $LOG)"
+    else echo "VLC did not start, see $LOG"; exit 1; fi ;;
+  stop)
+    pkill -f "$PAT" && echo "receiver stopped" || echo "receiver not running" ;;
+  status)
+    pgrep -f "$PAT" >/dev/null && echo "receiver running" || echo "receiver stopped" ;;
+  check)
+    a=$(size); sleep 5; b=$(size)
+    echo "$OUT: $a -> $b bytes in 5 s"
+    if [ "$b" -gt "$a" ]; then echo "OK: stream is arriving"; else echo "NO DATA: is the sender running? (mcast-sender status)"; fi
+    echo "IGMP memberships on eth0 (010101EF = 239.1.1.1):"
+    grep -A4 eth0 /proc/net/igmp | tail -n +2 ;;
+  *)
+    echo "usage: $0 start|stop|status|check"; exit 1 ;;
+esac

@@ -52,6 +52,8 @@ VPCS can't send or join multicast, so both hosts must be Linux hosts.
 | SW1 | [configs/SW1-ovs.sh](configs/SW1-ovs.sh) | SW1 console (root shell) |
 | R1 | [configs/R1.conf](configs/R1.conf) | R1 vtysh, after the shell script in step 3 |
 | VLC-Sender, IGMP-Receiver | commands in step 4 | Host shell |
+| VLC-Sender | [configs/mcast-sender](configs/mcast-sender) | `/usr/local/bin/mcast-sender start\|stop\|status` |
+| IGMP-Receiver | [configs/mcast-receiver](configs/mcast-receiver) | `/usr/local/bin/mcast-receiver start\|stop\|status\|check` |
 
 ---
 
@@ -186,6 +188,8 @@ The test follows four steps:
 ip addr add 239.1.1.1/32 dev eth0 autojoin     # sends an unsolicited IGMP report
 ```
 
+The join lasts only until the host restarts. After a restart, run it again (or start the VLC receiver, which joins by itself).
+
 **③ R1 queries.** Wait up to 30 seconds, then check:
 
 | Where | Command | Expect |
@@ -212,25 +216,96 @@ show ip pim upstream            ! (S,G) Joined
 
 ### Stream video with VLC
 
-Install VLC on both hosts. The [eBGP + PIM-SM lab, step 7](../eBGP-PIM-SM/README.md#7-stream-video-with-vlc) covers it: 256 MB of RAM, a temporary NAT link, `apk add vlc`, a `vlc` user, and the test clip.
+**VLC must be installed first.** The FRR image doesn't include it, and the hosts have no internet connection. Without it, the commands below fail with `su: unknown user vlc` or `cvlc: not found`. In the GNS3 project on the server, VLC 3.0.17.3 was installed on both hosts on 2026-11-13, and the test clip is on VLC-Sender at `/home/vlc/bbb.mp4`.
 
-Start the receiver first:
+**To install VLC (once per host):**
+
+1. In GNS3, add a **NAT** node and connect it to the host's **eth1**, which the lab doesn't use.
+2. On the host:
+
+   ```sh
+   rc-service frr stop                                   # frees memory for apk
+   ip link set eth1 up
+   udhcpc -i eth1 -n -q                                  # gets 192.168.122.x from the NAT node
+   ip route replace default via 192.168.122.1 dev eth1   # internet through NAT, not R1
+   apk update && apk add vlc                             # about 1 minute; 234 packages, 278 MiB
+   adduser -D -s /bin/sh vlc                             # VLC refuses to run as root
+   ```
+
+   > **The `ip route replace` line is required.** The lab's default route points at R1, which has no internet access. Without this line, `apk` fails with `network error (check Internet connection and firewall)`.
+
+3. On VLC-Sender only, download the test clip (*Big Buck Bunny*, 10 s, 991 KB, © Blender Foundation, [CC BY 3.0](https://creativecommons.org/licenses/by/3.0/)):
+
+   ```sh
+   wget -O /home/vlc/bbb.mp4 https://test-videos.co.uk/vids/bigbuckbunny/mp4/h264/360/Big_Buck_Bunny_360_10s_1MB.mp4
+   chown vlc:vlc /home/vlc/bbb.mp4
+   ```
+
+4. Remove the internet link and restore the lab route. Use gateway `192.168.20.1` on VLC-Sender and `192.168.10.1` on IGMP-Receiver:
+
+   ```sh
+   ip addr flush dev eth1; ip link set eth1 down
+   ip route replace default via 192.168.10.1 dev eth0
+   ```
+
+   Then delete the NAT node in GNS3.
+
+**Run the stream with the scripts.** Two helper scripts wrap the VLC commands, so you don't have to type the long `--sout` string. On the server they're installed as `/usr/local/bin/mcast-receiver` and `/usr/local/bin/mcast-sender`. To install them on another host, copy [configs/mcast-receiver](configs/mcast-receiver) or [configs/mcast-sender](configs/mcast-sender) to `/usr/local/bin/` and `chmod +x` it.
+
+| Host | Command | What it does |
+|---|---|---|
+| IGMP-Receiver | `mcast-receiver start` | Starts VLC in the background. VLC joins `239.1.1.1` and saves the stream to `/tmp/rx.ts`. **Start this first.** |
+| VLC-Sender | `mcast-sender start` | Streams `/home/vlc/bbb.mp4` in a loop to `239.1.1.1:5004` with TTL 16, in the background |
+| IGMP-Receiver | `mcast-receiver check` | Measures `/tmp/rx.ts` 5 seconds apart, prints `OK: stream is arriving` or `NO DATA`, and lists the IGMP memberships |
+| either | `mcast-receiver status` / `mcast-sender status` | Shows whether VLC is running |
+| either | `mcast-receiver stop` / `mcast-sender stop` | Stops VLC |
+
+Settings can be overridden with environment variables: `GROUP`, `PORT`, `OUT` and `SOURCE` on the receiver, and `GROUP`, `PORT`, `TTL` and `CLIP` on the sender. Logs go to `/tmp/vlc-rx.log` and `/tmp/vlc-tx.log`.
+
+Example output:
+
+```
+IGMP-Receiver:~# mcast-receiver start
+receiving 239.1.1.1:5004 into /tmp/rx.ts (log /tmp/vlc-rx.log)
+VLC-Sender:~# mcast-sender start
+sending /home/vlc/bbb.mp4 to 239.1.1.1:5004, TTL 16 (log /tmp/vlc-tx.log)
+IGMP-Receiver:~# mcast-receiver check
+/tmp/rx.ts: 2730888 -> 3218748 bytes in 5 s
+OK: stream is arriving
+IGMP memberships on eth0 (010101EF = 239.1.1.1):
+				010101EF     1 0:00000000		0
+				010000E0     1 0:00000000		0
+```
+
+**Or run VLC by hand.** These are the same commands the scripts run. Start the receiver first. VLC sends the IGMP join itself, so the `autojoin` line isn't needed.
 
 ```sh
+# IGMP-Receiver
 su vlc -c "cvlc -I dummy udp://@239.1.1.1:5004 --sout file/ts:/tmp/rx.ts"
 ```
 
-Then start the sender:
-
 ```sh
+# VLC-Sender
 su vlc -c "cvlc -I dummy --loop /home/vlc/bbb.mp4 --sout '#std{access=udp,mux=ts,dst=239.1.1.1:5004}' --ttl=16"
 ```
 
-While the stream runs, `ls -la /tmp/rx.ts` on the receiver shows the file growing.
+Add `> /tmp/vlc.log 2>&1 &` to run either one in the background, and stop it later with `pkill -f vlc`. Otherwise stop it with **Ctrl+C**.
+
+**Check that it works:**
+
+| Where | Command | Result on 2026-11-13 |
+|---|---|---|
+| IGMP-Receiver | `ls -la /tmp/rx.ts` twice, a few seconds apart | 2,845,380 → 3,252,964 bytes in 5 s: the file grows while the stream runs |
+| IGMP-Receiver | `grep -A3 eth0 /proc/net/igmp` | `010101EF` (239.1.1.1) joined, IGMP V3 |
+| R1 | `show ip mroute` | `192.168.20.10  239.1.1.1  SFT  eth0.20 → eth0.10`: the (S,G) is on the shortest-path tree |
+| R1 | `show ip mroute count` | (S,G) 4,324 packets, 5,811,456 bytes after about 50 s |
+| SW1 | `ovs-appctl mdb/show br0` | port 3 (eth2), VLAN 10, `239.1.1.1` |
 
 ### SSM test: (192.168.20.10, 232.1.1.1), IGMPv3 only, no RP
 
 With SSM, the receiver names the source as well as the group. That needs IGMPv3, so set `force_igmp_version=0` on the receiver first.
+
+With the scripts, run `SOURCE=192.168.20.10 GROUP=232.1.1.1 mcast-receiver start` on the receiver and `GROUP=232.1.1.1 mcast-sender start` on the sender. By hand:
 
 Receiver (VLC's `source@group` syntax sends an IGMPv3 source-specific join):
 
@@ -280,4 +355,7 @@ end
 | A node's console refuses connections, and stop/start on it times out | A GNS3 2.2.61 console bug seen in this lab. Restart the server on the VM with `sudo systemctl restart gns3-server`, reopen the project and start the nodes. Their configs are kept. |
 | `show ip mroute` has no entry | The sender's TTL is 1 (use `-t 16` / `--ttl=16`), or `rp_filter` is on. Check `sysctl net.ipv4.conf.all.rp_filter` on R1 (must be `0`). |
 | SSM stream doesn't arrive | The receiver is forced to IGMPv2, or R1's `eth0.10` isn't at IGMP version 3 (`show ip igmp interface`). |
+| `su: unknown user vlc` or `cvlc: not found` | VLC isn't installed on that host. Install it first (step 5, *Stream video with VLC*). |
+| `apk add vlc` fails with `network error` | The default route still points at R1. Run `ip route replace default via 192.168.122.1 dev eth1` while the NAT link is connected. |
+| The receiver gets nothing after it restarted | The `autojoin` join was lost. Join again, or start the VLC receiver. |
 | Everything breaks after R1 restarts | The subinterfaces are rebuilt by `/etc/local.d/lab.start`. Run it by hand, then `rc-service frr restart`. |
